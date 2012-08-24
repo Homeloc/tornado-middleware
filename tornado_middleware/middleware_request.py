@@ -76,12 +76,14 @@ class MiddlewareRequestHandler(RequestHandler):
 
         self._redirection = None
         self._cached_args = None
+        self._finish = None
 
     def redirect(self, *a, **kw):
         self._redirection = a, kw
 
-    def finish(self):
+    def finish(self, *a, **kw):
         ''' this does nothing, see do_finish. '''
+        self._finish = a, kw
 
     def try_redirect(self):
         if self._redirection:
@@ -89,7 +91,9 @@ class MiddlewareRequestHandler(RequestHandler):
             super(MiddlewareRequestHandler, self).redirect(*a, **kw)
 
     def do_finish(self):
-        super(MiddlewareRequestHandler, self).finish()
+        if self._finish:
+            a, kw = self._finish
+            super(MiddlewareRequestHandler, self).finish(*a, **kw)
 
     @callback_engine
     def _execute(self, transforms, *args, **kwargs):
