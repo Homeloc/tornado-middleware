@@ -77,6 +77,7 @@ class MiddlewareRequestHandler(RequestHandler):
         self._redirection = None
         self._cached_args = None
         self._finish = None
+        self._post_middleware = []
 
     def redirect(self, *a, **kw):
         self._redirection = a, kw
@@ -164,6 +165,12 @@ class MiddlewareRequestHandler(RequestHandler):
 
                 for middle in executed_middleware:
                     yield Task(middle.after_finish, *args, **kwargs)
+
+                for callback in self._post_middleware:
+                    callback()
+
+    def run_after_middleware_finish(self, callback):
+        self._post_middleware.append(callback)
 
 
 class MiddlewareMetaclass(type):
